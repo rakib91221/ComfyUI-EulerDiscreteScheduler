@@ -172,10 +172,16 @@ class FlowMatchEulerSchedulerNode:
         return (sigmas,)
 
 
+# Import Flash Attention node
+from .flash_attention_node import NODE_CLASS_MAPPINGS as FLASH_ATTN_MAPPINGS
+from .flash_attention_node import NODE_DISPLAY_NAME_MAPPINGS as FLASH_ATTN_DISPLAY_MAPPINGS
+
 NODE_CLASS_MAPPINGS = {
-    "FlowMatchEulerDiscreteScheduler (Custom)": FlowMatchEulerSchedulerNode
+    "FlowMatchEulerDiscreteScheduler (Custom)": FlowMatchEulerSchedulerNode,
+    **FLASH_ATTN_MAPPINGS
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "FlowMatchEulerDiscreteScheduler (Custom)": "FlowMatch Euler Discrete Scheduler (Custom)"
+    "FlowMatchEulerDiscreteScheduler (Custom)": "FlowMatch Euler Discrete Scheduler (Custom)",
+    **FLASH_ATTN_DISPLAY_MAPPINGS
 }
