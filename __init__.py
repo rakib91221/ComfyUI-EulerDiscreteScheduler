@@ -57,65 +57,65 @@ class FlowMatchEulerSchedulerNode:
         return {
             "required": {
                 "steps": ("INT", {
-                    "default": 20, 
+                    "default": 9, 
                     "min": 1, 
                     "max": 10000,
-                    "tooltip": "Number of diffusion steps. Higher = better quality but slower. Try 20-30 for previews, 40-50 for final results."
+                    "tooltip": "Number of diffusion steps. Z-Image-Turbo uses 9 steps by default (8 DiT forwards). Higher = better quality but slower."
                 }),
                 "base_image_seq_len": ("INT", {
                     "default": 256,
                     "tooltip": "Base sequence length for dynamic shifting. Should match model's training resolution (e.g., 256 for 512x512 images)."
                 }),
                 "base_shift": ("FLOAT", {
-                    "default": math.log(3),
-                    "tooltip": "Stabilizes generation. Higher values = more consistent/predictable outputs. Default: log(3) ≈ 1.099"
+                    "default": 0.5,
+                    "tooltip": "Stabilizes generation. Higher values = more consistent/predictable outputs. Z-Image-Turbo uses default 0.5."
                 }),
-                "invert_sigmas": ("BOOL", {
-                    "default": False,
-                    "tooltip": "Reverses the sigma schedule. Keep False unless experimenting with advanced techniques."
+                "invert_sigmas": (["disable", "enable"], {
+                    "default": "disable",
+                    "tooltip": "Reverses the sigma schedule. Keep disabled unless experimenting with advanced techniques."
                 }),
                 "max_image_seq_len": ("INT", {
                     "default": 8192,
                     "tooltip": "Maximum sequence length for dynamic shifting. Affects how the scheduler adapts to large images."
                 }),
                 "max_shift": ("FLOAT", {
-                    "default": math.log(3),
-                    "tooltip": "Maximum variation allowed. Higher = more exaggerated/stylized results. Default: log(3) ≈ 1.099"
+                    "default": 1.15,
+                    "tooltip": "Maximum variation allowed. Higher = more exaggerated/stylized results. Z-Image-Turbo uses default 1.15."
                 }),
                 "num_train_timesteps": ("INT", {
                     "default": 1000,
                     "tooltip": "Timesteps the model was trained with. Should match your model's config (typically 1000)."
                 }),
                 "shift": ("FLOAT", {
-                    "default": 1.0,
-                    "tooltip": "Global timestep schedule shift. Affects overall sampling behavior. Keep at 1.0 unless you understand timestep theory."
+                    "default": 3.0,
+                    "tooltip": "Global timestep schedule shift. Z-Image-Turbo uses 3.0 for optimal performance with the Turbo model."
                 }),
                 "shift_terminal": ("FLOAT", {
                     "default": 0.0,
                     "tooltip": "End value for shifted schedule. Set to 0.0 to disable. Advanced parameter for timestep schedule control."
                 }),
-                "stochastic_sampling": ("BOOL", {
-                    "default": False,
+                "stochastic_sampling": (["disable", "enable"], {
+                    "default": "disable",
                     "tooltip": "Adds controlled randomness to each step. Enable for more varied outputs (similar to ancestral samplers)."
                 }),
                 "time_shift_type": (["exponential", "linear"], {
                     "default": "exponential",
                     "tooltip": "Method for resolution-dependent shifting. Use 'exponential' for most cases, 'linear' for experiments."
                 }),
-                "use_beta_sigmas": ("BOOL", {
-                    "default": False,
+                "use_beta_sigmas": (["disable", "enable"], {
+                    "default": "disable",
                     "tooltip": "Uses beta distribution for sigmas. Experimental alternative noise schedule."
                 }),
-                "use_dynamic_shifting": ("BOOL", {
-                    "default": True,
-                    "tooltip": "Auto-adjusts timesteps based on image resolution. Recommended: keep enabled for better multi-resolution results."
+                "use_dynamic_shifting": (["disable", "enable"], {
+                    "default": "disable",
+                    "tooltip": "Auto-adjusts timesteps based on image resolution. Z-Image-Turbo disables this for consistent Turbo performance."
                 }),
-                "use_exponential_sigmas": ("BOOL", {
-                    "default": False,
+                "use_exponential_sigmas": (["disable", "enable"], {
+                    "default": "disable",
                     "tooltip": "Uses exponential sigma spacing. Try enabling for different noise distribution characteristics."
                 }),
-                "use_karras_sigmas": ("BOOL", {
-                    "default": False,
+                "use_karras_sigmas": (["disable", "enable"], {
+                    "default": "disable",
                     "tooltip": "Uses Karras noise schedule for smoother results. Similar to DPM++ samplers, often improves quality."
                 }),
             }
@@ -145,21 +145,22 @@ class FlowMatchEulerSchedulerNode:
         use_exponential_sigmas,
         use_karras_sigmas,
     ):
+        # Convert string combo values to boolean
         config = {
             "base_image_seq_len": base_image_seq_len,
             "base_shift": base_shift,
-            "invert_sigmas": invert_sigmas,
+            "invert_sigmas": invert_sigmas == "enable",
             "max_image_seq_len": max_image_seq_len,
             "max_shift": max_shift,
             "num_train_timesteps": num_train_timesteps,
             "shift": shift,
             "shift_terminal": shift_terminal if shift_terminal != 0.0 else None,
-            "stochastic_sampling": stochastic_sampling,
+            "stochastic_sampling": stochastic_sampling == "enable",
             "time_shift_type": time_shift_type,
-            "use_beta_sigmas": use_beta_sigmas,
-            "use_dynamic_shifting": use_dynamic_shifting,
-            "use_exponential_sigmas": use_exponential_sigmas,
-            "use_karras_sigmas": use_karras_sigmas,
+            "use_beta_sigmas": use_beta_sigmas == "enable",
+            "use_dynamic_shifting": use_dynamic_shifting == "enable",
+            "use_exponential_sigmas": use_exponential_sigmas == "enable",
+            "use_karras_sigmas": use_karras_sigmas == "enable",
         }
 
         scheduler = FlowMatchEulerDiscreteScheduler.from_config(config)
