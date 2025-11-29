@@ -37,3 +37,7 @@ Model -> SamplerCustom
 ## Tech bits:
 - https://huggingface.co/docs/diffusers/api/schedulers/flow_match_euler_discrete
 - https://huggingface.co/Tongyi-MAI/Z-Image-Turbo/blob/main/scheduler/scheduler_config.json
+
+## Find this useful and want to support ?
+
+  [Buy me a beer!](https://donate.stripe.com/cNi9ALaASf65clXahPcV201)
