@@ -1,6 +1,13 @@
 # FlowMatch Euler Discrete Scheduler for ComfyUI
 
+Euler Discrete seems not exposed in comfy, but it is what the official demo in diffusers use. so I am exposing it in the scheduler section and provide a node, experimental, to configure the scheduler for use with CustomSampler
+
+<img width="1792" height="1120" alt="example" src="https://github.com/user-attachments/assets/91d4f679-9c9e-40ef-bed6-12bb860c37e7" />
+
+
 Custom node that exposes all parameters of the FlowMatchEulerDiscreteScheduler. Outputs SIGMAS for use with **SamplerCustom** node.
+
+![highlight](https://github.com/user-attachments/assets/249cd15d-f373-46c7-bacb-13a4b5421ba3)
 
 ## Usage
 
