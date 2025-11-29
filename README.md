@@ -12,10 +12,9 @@ So:
 So...if you want **sharper and more noise free images**, you can experiment with this.
 
 ## Installation
-this is an alpha stage node, so not esposed yet in manager. to install
-open a terminal command in your custom nodes then, you do have git installed I assume, then...:
-
-```git clone https://github.com/erosDiffusion/ComfyUI-EulerDiscreteScheduler.git```
+to install: 
+- use comfy ui manager
+- in alternative: ```git clone https://github.com/erosDiffusion/ComfyUI-EulerDiscreteScheduler.git``` in your custom nodes folder.
 
 
 
