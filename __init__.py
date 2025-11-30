@@ -10,6 +10,7 @@
 
 import math
 import torch
+import numpy as np # <-- Required for robust slicing of PyTorch tensors
 
 try:
     from diffusers.schedulers.scheduling_flow_match_euler_discrete import FlowMatchEulerDiscreteScheduler
@@ -23,6 +24,8 @@ from comfy.samplers import SchedulerHandler, SCHEDULER_HANDLERS, SCHEDULER_NAMES
 
 # Default config for registering in ComfyUI
 default_config = {
+    "start_at_step": 0,
+    "end_at_step": 9999,
     "base_image_seq_len": 256,
     "base_shift": math.log(3),
     "invert_sigmas": False,
@@ -60,7 +63,19 @@ class FlowMatchEulerSchedulerNode:
                     "default": 9, 
                     "min": 1, 
                     "max": 10000,
-                    "tooltip": "Number of diffusion steps. Z-Image-Turbo uses 9 steps by default (8 DiT forwards). Higher = better quality but slower."
+                    "tooltip": "Total number of diffusion steps to generate the full sigma schedule."
+                }),
+                "start_at_step": ("INT", { # <-- NEW INPUT
+                    "default": 0,
+                    "min": 0,
+                    "max": 10000,
+                    "tooltip": "The starting step (index) of the sigma schedule to use. Set to 0 to start at the beginning (first step)."
+                }),
+                "end_at_step": ("INT", { # <-- NEW INPUT
+                    "default": 99999,
+                    "min": 0,
+                    "max": 10000,
+                    "tooltip": "The ending step (index) of the sigma schedule to use. Set higher than 'steps' to use all steps."
                 }),
                 "base_image_seq_len": ("INT", {
                     "default": 256,
@@ -125,11 +140,13 @@ class FlowMatchEulerSchedulerNode:
     RETURN_NAMES = ("sigmas",)
     FUNCTION = "create"
     CATEGORY = "sampling/schedulers"
-    DESCRIPTION = "FlowMatch Euler Discrete Scheduler with full parameter control. Outputs SIGMAS for use with SamplerCustom. Supports Karras sigmas, dynamic shifting, and stochastic sampling for advanced control over the diffusion process."
+    DESCRIPTION = "FlowMatch Euler Discrete Scheduler with full parameter control and ability to trim the schedule (start_at_step/end_at_step)."
 
     def create(
         self,
         steps,
+        start_at_step,  # <-- New parameter
+        end_at_step,    # <-- New parameter
         base_image_seq_len,
         base_shift,
         invert_sigmas,
@@ -165,11 +182,24 @@ class FlowMatchEulerSchedulerNode:
 
         scheduler = FlowMatchEulerDiscreteScheduler.from_config(config)
         
-        # Set timesteps and get sigmas for the specified number of steps
+        # 1. Generate the full sigma schedule
         scheduler.set_timesteps(steps, device="cpu", mu=0.0)
         sigmas = scheduler.sigmas
+        
+        # 2. Apply start_at_step and end_at_step (Slicing the sigmas tensor)
+        # Determine the exclusive end index for the slice
+        # end_at_step is the step index (e.g., 5). We use 5+1=6 for the slice end index.
+        end_index = min(end_at_step + 1, len(sigmas))
 
-        return (sigmas,)
+        # Slice the tensor: [start:end]
+        sigmas_sliced = sigmas[start_at_step:end_index]
+        
+        # Check for empty schedule resulting from slicing
+        if sigmas_sliced.numel() == 0:
+            print("Warning: start_at_step/end_at_step resulted in an empty sigma schedule. Using full schedule as fallback.")
+            sigmas_sliced = sigmas
+            
+        return (sigmas_sliced,)
 
 
 # Import Flash Attention node
