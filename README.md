@@ -63,7 +63,7 @@ More examples:
 **1.0.6**
 
 - updated example
-- updated pytproject deps
+- updated pyproject deps (diffusers)
 
 **1.0.5**
 
